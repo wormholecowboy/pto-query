@@ -23,4 +23,4 @@ app.message('hello', async ({ message, say }) => {
   console.log('⚡️ Bolt app is running!');
 })();
 
-console.log(process.env);
+// console.log(process.env);
