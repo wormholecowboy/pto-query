@@ -1,0 +1,24 @@
+{
+  "name": "pto-query",
+  "version": "1.0.0",
+  "description": "A Slack bot that queries a Google Sheet for remaining PTO",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wormholecowboy/pto-query.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/wormholecowboy/pto-query/issues"
+  },
+  "homepage": "https://github.com/wormholecowboy/pto-query#readme",
+  "dependencies": {
+    "@slack/bolt": "^3.11.1",
+    "dotenv": "^16.0.1"
+  }
+}
