@@ -1,5 +1,17 @@
 require('dotenv').config();
 const { App } = require('@slack/bolt');
+const { AuthorizationError } = require('@slack/oauth');
+const fs = require('fs');
+const { google } = require('googleapis');
+
+// Google Auth
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
+const TOKEN_PATH = 'token.json';
+
+fs.readFile('credentials.json', (err, content) => {
+  if (err) return console.error('Error loading client secret file: ', err);
+  Authorization(JSON.parse(content), queryPTO);
+});
 
 // Initializes your app with your bot token and signing secret
 const app = new App({
@@ -9,6 +21,28 @@ const app = new App({
   appToken: process.env.SLACK_APP_TOKEN,
   port: process.env.PORT || 3000,
 });
+
+function queryPTO() {
+  const sheets = google.sheets({ version: 'v4', auth });
+  sheets.spreadsheets.values.get(
+    {
+      spreadsheetId: '1ub70x4_NOCzVDLYcH8fmZis1F7nRG87iCLWQ_pnnnP4',
+      range: 'pto-left!A2:B',
+    },
+    (err, res) => {
+      if (err) return console.log('The API returned an error bucko: ' + err);
+      const rows = res.data.values;
+      if (rows.length) {
+        console.log('Name, pto left:');
+        rows.map((row) => {
+          console.log(`${row[0]}, ${row[1]}`);
+        });
+      } else {
+        console.log('no data found.');
+      }
+    }
+  );
+}
 
 // Listens to incoming messages that contain "hello"
 app.message('hello', async ({ message, say }) => {
