@@ -8,9 +8,17 @@ const { google } = require('googleapis');
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 const TOKEN_PATH = 'token.json';
 
+async function getAuthToken() {
+  const auth = new google.auth.GoogleAuth({
+    scopes: SCOPES,
+  });
+  const authToken = await auth.getClient();
+  return authToken;
+}
+
 fs.readFile('credentials.json', (err, content) => {
   if (err) return console.error('Error loading client secret file: ', err);
-  Authorization(JSON.parse(content), queryPTO);
+  getAuthToken(JSON.parse(content), queryPTO);
 });
 
 // Initializes your app with your bot token and signing secret
