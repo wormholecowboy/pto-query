@@ -6,6 +6,7 @@ async function getAuthToken() {
   const auth = new google.auth.GoogleAuth({
     keyFile: './credentials.json',
     scopes: SCOPES,
+    projectId: 'pto-query',
   });
   const authToken = await auth.getClient();
   return authToken;

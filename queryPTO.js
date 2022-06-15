@@ -1,12 +1,14 @@
 const { google } = require('googleapis');
 const { getAuthToken } = require('./getAuthToken');
 
-function queryPTO(auth) {
-  const sheets = google.sheets({ version: 'v4', auth });
+const client = getAuthToken();
+const sheets = google.sheets({ version: 'v4', auth: client });
+
+function queryPTO() {
   let data = sheets.spreadsheets.values.get(
     {
       spreadsheetId: '1ub70x4_NOCzVDLYcH8fmZis1F7nRG87iCLWQ_pnnnP4',
-      range: 'pto-left!A2:B',
+      range: 'pto-left!A:B',
     },
     (err, res) => {
       if (err) return console.log('The API returned an error bucko: ' + err);

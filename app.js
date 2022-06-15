@@ -5,12 +5,10 @@ const fs = require('fs');
 const { getAuthToken } = require('./getAuthToken');
 const { queryPTO } = require('./queryPTO');
 
-authToken = getAuthToken();
-
-fs.readFile('credentials.json', (err, content) => {
-  if (err) return console.error('Error loading client secret file: ', err);
-  getAuthToken(JSON.parse(content), queryPTO);
-});
+// fs.readFile('credentials.json', (err, content) => {
+//   if (err) return console.error('Error loading client secret file: ', err);
+//   getAuthToken(JSON.parse(content), queryPTO);
+// });
 
 // Initializes your app with your bot token and signing secret
 const app = new App({
@@ -29,7 +27,7 @@ const app = new App({
 
 // Listens to incoming messages that contain "hello"
 app.message('hello', async ({ message, say }) => {
-  let res = await queryPTO(authToken);
+  let res = await queryPTO();
   // say() sends a message to the channel where the event was triggered
   await say(res);
 });
