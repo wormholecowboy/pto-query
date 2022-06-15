@@ -2,7 +2,7 @@
   "name": "pto-query",
   "version": "1.0.0",
   "description": "A Slack bot that queries a Google Sheet for remaining PTO",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,6 +20,6 @@
   "dependencies": {
     "@slack/bolt": "^3.11.1",
     "dotenv": "^16.0.1",
-    "googleapis": "^39.2.0"
+    "googleapis": "^102.0.0"
   }
 }
