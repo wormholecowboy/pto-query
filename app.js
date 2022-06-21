@@ -1,14 +1,46 @@
 require('dotenv').config();
 const { App } = require('@slack/bolt');
-const { AuthorizationError } = require('@slack/oauth');
-const fs = require('fs');
-const { getAuthToken } = require('./getAuthToken');
-const { queryPTO } = require('./queryPTO');
+const { google } = require('googleapis');
 
-// fs.readFile('credentials.json', (err, content) => {
-//   if (err) return console.error('Error loading client secret file: ', err);
-//   getAuthToken(JSON.parse(content), queryPTO);
-// });
+async function getAuthToken() {
+  const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
+
+  const auth = new google.auth.GoogleAuth({
+    keyFile: './credentials.json',
+    scopes: SCOPES,
+    projectId: 'pto-query',
+  });
+  const authToken = await auth.getClient();
+  //console.log(authToken);
+  return authToken;
+}
+
+const client = getAuthToken();
+const sheets = google.sheets({ version: 'v4', auth: client });
+
+function queryPTO() {
+  let data = sheets.spreadsheets.values.get(
+    {
+      spreadsheetId: '1ub70x4_NOCzVDLYcH8fmZis1F7nRG87iCLWQ_pnnnP4',
+      range: 'pto-left!A1:B3',
+    },
+    (err, res) => {
+      if (err) return console.log('The API returned an error bucko: ' + err);
+      const rows = res.data.values;
+      if (rows.length) {
+        console.log('Name, pto left:');
+        rows.map((row) => {
+          console.log(`${row[0]}, ${row[1]}`);
+        });
+        return 'here is some data';
+      } else {
+        console.log('no data found.');
+        return 'no data found jerky';
+      }
+    }
+  );
+  return data;
+}
 
 // Initializes your app with your bot token and signing secret
 const app = new App({
@@ -28,8 +60,9 @@ const app = new App({
 // Listens to incoming messages that contain "hello"
 app.message('hello', async ({ message, say }) => {
   let res = await queryPTO();
+  console.log(res);
   // say() sends a message to the channel where the event was triggered
-  await say(res);
+  await say('hiya');
 });
 
 (async () => {
