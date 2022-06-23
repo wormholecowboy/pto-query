@@ -29,6 +29,24 @@ jwtClient.authorize(function (err, tokens) {
 const sheets = google.sheets({ version: 'v4', auth: jwtClient });
 const spreadsheetId = '1ub70x4_NOCzVDLYcH8fmZis1F7nRG87iCLWQ_pnnnP4';
 const range = 'pto-left!A1:B3';
+const idRange = 'pto-left!A:A';
+const ptoRange = 'pto-left!C:C';
+
+async function getRowIndex(u) {
+  let data = await sheets.spreadsheets.values.get(
+    {
+      spreadsheetId: spreadsheetId,
+      range: idRange,
+    },
+    (err, res) => {
+      if (err) return console.log('The API returned an error bucko: ' + err);
+      res.findIndex((val) => {
+        return val == u;
+      });
+    }
+  );
+  return data;
+}
 
 async function queryPTO(user) {
   let data = await sheets.spreadsheets.values.get(
@@ -45,10 +63,9 @@ async function queryPTO(user) {
           console.log(`${row[0]}, ${row[1]}`);
         });
         return 'here is some data';
-      } else {
-        console.log('no data found.');
-        return 'no data found jerky';
       }
+      console.log('no data found.');
+      return 'no data found jerky';
     }
   );
   return data;
@@ -70,9 +87,10 @@ function setUser(u) {
 
 // Listens to incoming messages that contain "hello"
 app.message('hello', async ({ message, say }) => {
-  //console.log(res);
   setUser(message.user);
   console.log(user);
+  let rowIndex = getRowIndex(user);
+  console.log(rowIndex);
   //let res = queryPTO();
   //await say(`${res}`);
 });
