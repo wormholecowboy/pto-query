@@ -1,28 +1,69 @@
+'use strict';
+
 require('dotenv').config();
 const { App } = require('@slack/bolt');
 const { google } = require('googleapis');
+const { JWT } = require('google-auth-library');
+const keys = require('./credentials.json');
+const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 
-async function getAuthToken() {
-  const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
+// async function getAuthToken() {
+//   const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 
-  const auth = new google.auth.GoogleAuth({
-    keyFile: './credentials.json',
-    scopes: SCOPES,
-    projectId: 'pto-query',
-  });
-  const authToken = await auth.getClient();
-  //console.log(authToken);
-  return authToken;
-}
+//   const auth = new google.auth.GoogleAuth({
+//     keyFile: './credentials.json',
+//     scopes: SCOPES,
+//     projectId: 'pto-query',
+//   });
+//   const authToken = await auth.getClient();
+//   console.log(authToken);
+//   return authToken;
+// }
+// const client = getAuthToken();
 
-const client = getAuthToken();
-const sheets = google.sheets({ version: 'v4', auth: client });
+// async function jwtAuth() {
+//   const client = new JWT({
+//     email: keys.client_email,
+//     key: keys.private_key,
+//     scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+//   });
+//   const url = `https://dns.googleapis.com/dns/v1/projects/${keys.project_id}`;
+//   const res = await client.request({ url });
+//   console.log(res.data);
+// }
+
+// jwtAuth().catch(console.error);
+
+let jwtClient = new google.auth.JWT({
+  keyFile: keys,
+  email: keys.client_email,
+  key: keys.private_key,
+  keyId: keys.private_key_id,
+  scopes: SCOPES,
+});
+
+console.log(jwtClient);
+
+jwtClient.authorize(function (err, tokens) {
+  if (err) {
+    console.log(err);
+    return;
+  } else {
+    console.log('Google auth successfully connected!');
+  }
+});
+
+//console.log(jwtClient);
+
+const sheets = google.sheets({ version: 'v4', auth: jwtClient });
+const spreadsheetId = '1ub70x4_NOCzVDLYcH8fmZis1F7nRG87iCLWQ_pnnnP4';
+const range = 'pto-left!A1:B3';
 
 function queryPTO() {
   let data = sheets.spreadsheets.values.get(
     {
-      spreadsheetId: '1ub70x4_NOCzVDLYcH8fmZis1F7nRG87iCLWQ_pnnnP4',
-      range: 'pto-left!A1:B3',
+      spreadsheetId: spreadsheetId,
+      range: range,
     },
     (err, res) => {
       if (err) return console.log('The API returned an error bucko: ' + err);
