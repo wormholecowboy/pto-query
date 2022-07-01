@@ -35,10 +35,10 @@ const request = {
 };
 
 async function test() {
-  let data = await sheets.spreadsheets.values.get(request);
-  let values = data.data.values;
+  let response = await sheets.spreadsheets.values.get(request);
+  let values = response.data.values;
   console.log('values from inside temp fn log: ', values);
-  return data;
+  return values;
 }
 
 async function getRowIndex(u) {
@@ -109,6 +109,6 @@ app.message('hello', async ({ message, say }) => {
   await app.start(process.env.PORT || 3000);
 
   console.log('⚡️ Bolt app is running!');
-  const temp = test();
+  const temp = await test();
   console.log('values from main fn log: ', temp);
 })();
