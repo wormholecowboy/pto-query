@@ -15,8 +15,6 @@ let jwtClient = new google.auth.JWT({
   scopes: SCOPES,
 });
 
-console.log(jwtClient);
-
 jwtClient.authorize(function (err, tokens) {
   if (err) {
     console.log(err);
@@ -29,8 +27,37 @@ jwtClient.authorize(function (err, tokens) {
 const sheets = google.sheets({ version: 'v4', auth: jwtClient });
 const spreadsheetId = '1ub70x4_NOCzVDLYcH8fmZis1F7nRG87iCLWQ_pnnnP4';
 const range = 'pto-left!A1:B3';
+const idRange = 'pto-left!A:A';
+const ptoRange = 'pto-left!C:C';
+const request = {
+  spreadsheetId,
+  range,
+};
 
-async function queryPTO(user) {
+async function test() {
+  let data = await sheets.spreadsheets.values.get(request);
+  let values = data.data.values;
+  console.log('values from inside temp fn log: ', values);
+  return data;
+}
+
+async function getRowIndex(u) {
+  let data = await sheets.spreadsheets.values.get(
+    {
+      spreadsheetId: spreadsheetId,
+      range: idRange,
+    },
+    (err, res) => {
+      if (err) return console.log('The API returned an error bucko: ' + err);
+      res.findIndex((val) => {
+        return val == u;
+      });
+    }
+  );
+  return data;
+}
+
+async function queryPTO() {
   let data = await sheets.spreadsheets.values.get(
     {
       spreadsheetId: spreadsheetId,
@@ -45,10 +72,9 @@ async function queryPTO(user) {
           console.log(`${row[0]}, ${row[1]}`);
         });
         return 'here is some data';
-      } else {
-        console.log('no data found.');
-        return 'no data found jerky';
       }
+      console.log('no data found.');
+      return 'no data found jerky';
     }
   );
   return data;
@@ -70,9 +96,10 @@ function setUser(u) {
 
 // Listens to incoming messages that contain "hello"
 app.message('hello', async ({ message, say }) => {
-  //console.log(res);
   setUser(message.user);
-  console.log(user);
+  console.log('user id: ', user);
+  //let rowIndex = getRowIndex(user);
+  // console.log(rowIndex);
   //let res = queryPTO();
   //await say(`${res}`);
 });
@@ -82,4 +109,6 @@ app.message('hello', async ({ message, say }) => {
   await app.start(process.env.PORT || 3000);
 
   console.log('⚡️ Bolt app is running!');
+  const temp = test();
+  console.log('values from main fn log: ', temp);
 })();
