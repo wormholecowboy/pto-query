@@ -26,35 +26,19 @@ jwtClient.authorize(function (err, tokens) {
 
 const sheets = google.sheets({ version: 'v4', auth: jwtClient });
 const spreadsheetId = '1ub70x4_NOCzVDLYcH8fmZis1F7nRG87iCLWQ_pnnnP4';
-const range = 'pto-left!A1:B3';
-const idRange = 'pto-left!A:A';
-const ptoRange = 'pto-left!C:C';
+const range = 'pto-left!A1:D3';
 const request = {
   spreadsheetId,
   range,
+  majorDimension: 'COLUMNS',
 };
+const ptoIndex = 2;
 
-async function test() {
+async function getValues() {
   let response = await sheets.spreadsheets.values.get(request);
   let values = response.data.values;
   console.log('values from inside temp fn log: ', values);
   return values;
-}
-
-async function getRowIndex(u) {
-  let data = await sheets.spreadsheets.values.get(
-    {
-      spreadsheetId: spreadsheetId,
-      range: idRange,
-    },
-    (err, res) => {
-      if (err) return console.log('The API returned an error bucko: ' + err);
-      res.findIndex((val) => {
-        return val == u;
-      });
-    }
-  );
-  return data;
 }
 
 async function queryPTO() {
@@ -94,14 +78,27 @@ function setUser(u) {
   user = u;
 }
 
+async function getRowIndex(u) {
+  let values = await getValues();
+  let userIndex = values[0].findIndex((val) => {
+    return val == u;
+  });
+  return userIndex;
+}
+
+async function getPTOLeft(userIndex) {
+  let values = await getValues();
+  console.log('values :', values);
+  let ptoLeft = values[ptoIndex][userIndex];
+  return ptoLeft;
+}
+
 // Listens to incoming messages that contain "hello"
 app.message('hello', async ({ message, say }) => {
   setUser(message.user);
-  console.log('user id: ', user);
-  //let rowIndex = getRowIndex(user);
-  // console.log(rowIndex);
-  //let res = queryPTO();
-  //await say(`${res}`);
+  let rowIndex = await getRowIndex(user);
+  let ptoLeft = await getPTOLeft(rowIndex);
+  await say(`You have ${ptoLeft} PTO hour(s) left.`);
 });
 
 (async () => {
@@ -109,6 +106,6 @@ app.message('hello', async ({ message, say }) => {
   await app.start(process.env.PORT || 3000);
 
   console.log('⚡️ Bolt app is running!');
-  const temp = await test();
-  console.log('values from main fn log: ', temp);
+  // const temp = await test();
+  // console.log('values from main fn log: ', temp);
 })();
