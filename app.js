@@ -3,10 +3,10 @@
 require('dotenv').config();
 const { App } = require('@slack/bolt');
 const { google } = require('googleapis');
-const { JWT } = require('google-auth-library');
 const keys = require('./credentials.json');
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets.readonly'];
 
+// Google Auth
 let jwtClient = new google.auth.JWT({
   keyFile: keys,
   email: keys.client_email,
@@ -24,44 +24,21 @@ jwtClient.authorize(function (err, tokens) {
   }
 });
 
+// Google Variables
 const sheets = google.sheets({ version: 'v4', auth: jwtClient });
 const spreadsheetId = '1ub70x4_NOCzVDLYcH8fmZis1F7nRG87iCLWQ_pnnnP4';
-const range = 'pto-left!A1:D3';
+const range = 'pto-left!A1:E100';
+const ptoIndex = 2;
 const request = {
   spreadsheetId,
   range,
   majorDimension: 'COLUMNS',
 };
-const ptoIndex = 2;
 
 async function getValues() {
   let response = await sheets.spreadsheets.values.get(request);
   let values = response.data.values;
-  console.log('values from inside temp fn log: ', values);
   return values;
-}
-
-async function queryPTO() {
-  let data = await sheets.spreadsheets.values.get(
-    {
-      spreadsheetId: spreadsheetId,
-      range: range,
-    },
-    (err, res) => {
-      if (err) return console.log('The API returned an error bucko: ' + err);
-      const rows = res.data.values;
-      if (rows.length) {
-        console.log('Name, pto left:');
-        rows.map((row) => {
-          console.log(`${row[0]}, ${row[1]}`);
-        });
-        return 'here is some data';
-      }
-      console.log('no data found.');
-      return 'no data found jerky';
-    }
-  );
-  return data;
 }
 
 // Slack Auth
@@ -88,7 +65,6 @@ async function getRowIndex(u) {
 
 async function getPTOLeft(userIndex) {
   let values = await getValues();
-  console.log('values :', values);
   let ptoLeft = values[ptoIndex][userIndex];
   return ptoLeft;
 }
@@ -106,6 +82,4 @@ app.message('hello', async ({ message, say }) => {
   await app.start(process.env.PORT || 3000);
 
   console.log('⚡️ Bolt app is running!');
-  // const temp = await test();
-  // console.log('values from main fn log: ', temp);
 })();
